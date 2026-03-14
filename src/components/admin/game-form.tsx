@@ -10,7 +10,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
-export function GameForm({ initialData }: { initialData?: any }) {
+interface GameFormProps {
+  initialData?: {
+    id?: string;
+    title?: string;
+    description?: string;
+    platform?: string;
+    region_lock?: string;
+    cover_image?: string;
+  };
+}
+
+export function GameForm({ initialData }: GameFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -37,8 +48,9 @@ export function GameForm({ initialData }: { initialData?: any }) {
       }
       router.push('/admin/games');
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      const err = error as Error;
+      toast.error(err.message || 'Erro desconhecido');
     } finally {
       setLoading(false);
     }
@@ -70,7 +82,7 @@ export function GameForm({ initialData }: { initialData?: any }) {
           <Label>Plataforma</Label>
           <Select 
             value={formData.platform} 
-            onValueChange={(v) => setFormData({ ...formData, platform: v })}
+            onValueChange={(v) => setFormData({ ...formData, platform: v || '' })}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecione a plataforma" />
@@ -89,7 +101,7 @@ export function GameForm({ initialData }: { initialData?: any }) {
           <Label>Região (Lock)</Label>
           <Select 
             value={formData.region_lock} 
-            onValueChange={(v) => setFormData({ ...formData, region_lock: v })}
+            onValueChange={(v) => setFormData({ ...formData, region_lock: v || '' })}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecione a região" />

@@ -53,8 +53,9 @@ export async function POST(request: Request) {
       keyCode: key.key_code,
     });
 
-  } catch (error: any) {
-    console.error('Key Reveal error:', error);
+  } catch (error) {
+    const err = error as Error;
+    console.error('Key Reveal error:', err.message);
     return NextResponse.json({ error: 'Erro interno no servidor' }, { status: 500 });
   }
 }

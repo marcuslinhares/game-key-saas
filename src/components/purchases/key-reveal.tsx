@@ -2,15 +2,14 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, Copy, CheckCircle2, Lock } from 'lucide-react';
+import { Eye, Copy, CheckCircle2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface KeyRevealProps {
   orderId: string;
-  gameTitle: string;
 }
 
-export function KeyReveal({ orderId, gameTitle }: KeyRevealProps) {
+export function KeyReveal({ orderId }: KeyRevealProps) {
   const [revealed, setRevealed] = useState(false);
   const [keyCode, setKeyCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,8 +32,9 @@ export function KeyReveal({ orderId, gameTitle }: KeyRevealProps) {
       setKeyCode(result.keyCode);
       setRevealed(true);
       toast.success('Chave revelada com sucesso!');
-    } catch (error: any) {
-      toast.error('Erro ao revelar chave: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error('Erro ao revelar chave: ' + message);
     } finally {
       setLoading(false);
     }

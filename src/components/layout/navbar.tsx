@@ -2,15 +2,19 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Gamepad2, ShoppingCart, User, LogIn } from 'lucide-react';
+import { Gamepad2, User, LogIn } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    supabase.auth.getUser().then((res) => {
+      const user = res.data?.user as SupabaseUser | null;
+      setUser(user);
+    });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });

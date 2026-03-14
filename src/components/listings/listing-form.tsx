@@ -9,10 +9,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
+interface GameOption {
+  id: string;
+  title: string;
+}
+
 export function ListingForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [games, setGames] = useState<any[]>([]);
+  const [games, setGames] = useState<GameOption[]>([]);
   const [formData, setFormData] = useState({
     game_id: '',
     price: '',
@@ -23,7 +28,7 @@ export function ListingForm() {
     const fetchGames = async () => {
       const { data, error } = await supabase.from('games').select('id, title');
       if (error) toast.error('Erro ao carregar jogos');
-      else setGames(data || []);
+      else setGames((data as GameOption[]) || []);
     };
     fetchGames();
   }, []);
@@ -49,8 +54,9 @@ export function ListingForm() {
       toast.success('Anúncio criado com sucesso!');
       router.push('/dashboard/seller');
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error(message);
     } finally {
       setLoading(false);
     }

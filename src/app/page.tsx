@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { GameCard } from '@/components/games/game-card';
 import { SearchBar } from '@/components/games/search-bar';
@@ -10,12 +10,28 @@ import { toast } from 'sonner';
 import { Store, ShieldCheck, Zap, Globe } from 'lucide-react';
 import Link from 'next/link';
 
+interface Listing {
+  price: number;
+  active: boolean;
+  stock_count: number;
+}
+
+interface Game {
+  id: string;
+  title: string;
+  platform: string;
+  region_lock: string;
+  cover_image?: string;
+  listings?: Listing[];
+  starting_price?: number | null;
+}
+
 export default function Home() {
-  const [games, setGames] = useState<any[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -32,25 +48,38 @@ export default function Home() {
 
       if (error) throw error;
 
-      const gamesWithPrice = (data || []).map((game: any) => {
-        const activeListings = game.listings?.filter((l: any) => l.active && l.stock_count > 0) || [];
+      const gamesWithPrice = (data || []).map((item: unknown) => {
+        const game = item as { 
+          id: string; 
+          title: string; 
+          platform: string; 
+          region_lock: string; 
+          cover_image: string; 
+          listings?: Listing[] 
+        };
+        const activeListings = game.listings?.filter((l) => l.active && l.stock_count > 0) || [];
         const minPrice = activeListings.length > 0 
-          ? Math.min(...activeListings.map((l: any) => l.price)) 
-          : null;
+          ? Math.min(...activeListings.map((l) => l.price)) 
+          : undefined;
         
         return {
-          ...game,
+          id: game.id,
+          title: game.title,
+          platform: game.platform,
+          region_lock: game.region_lock,
+          cover_image: game.cover_image,
           starting_price: minPrice
-        };
+        } as Game;
       });
 
       setGames(gamesWithPrice);
-    } catch (error: any) {
-      toast.error('Erro ao carregar jogos: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error('Erro ao carregar jogos: ' + message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -58,7 +87,7 @@ export default function Home() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [fetchGames]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -101,7 +130,15 @@ export default function Home() {
             </div>
           ) : (
             games.map((game) => (
-              <GameCard key={game.id} {...game} />
+              <GameCard 
+                key={game.id} 
+                id={game.id}
+                title={game.title}
+                platform={game.platform}
+                region_lock={game.region_lock}
+                cover_image={game.cover_image}
+                starting_price={game.starting_price ?? undefined}
+              />
             ))
           )}
         </div>

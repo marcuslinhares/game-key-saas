@@ -5,13 +5,27 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatsCards } from '@/components/seller/stats-cards';
-import { Plus, LayoutDashboard, Package, MoreHorizontal, Edit, Power, PowerOff } from 'lucide-react';
+import { Plus, LayoutDashboard, Package, Edit, Power, PowerOff } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
 export default function SellerDashboardPage() {
-  const [profile, setProfile] = useState<any>(null);
-  const [listings, setListings] = useState<any[]>([]);
+  interface Profile {
+  balance_available: string;
+  balance_pending: string;
+}
+interface Listing {
+  id: string;
+  price: string;
+  stock_count: number;
+  active: boolean;
+  games: {
+    title: string;
+    platform: string;
+  };
+}
+const [profile, setProfile] = useState<Profile | null>(null);
+const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -45,8 +59,9 @@ export default function SellerDashboardPage() {
       if (listingError) throw listingError;
       setListings(listingData || []);
 
-    } catch (error: any) {
-      toast.error('Erro ao carregar painel: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error('Erro ao carregar painel: ' + message);
     } finally {
       setLoading(false);
     }
@@ -90,8 +105,8 @@ export default function SellerDashboardPage() {
       </div>
 
       <StatsCards 
-        balanceAvailable={parseFloat(profile?.balance_available || 0)}
-        balancePending={parseFloat(profile?.balance_pending || 0)}
+        balanceAvailable={parseFloat(profile?.balance_available || '0')}
+        balancePending={parseFloat(profile?.balance_pending || '0')}
         totalSales={0} // Em produção, aqui viria o COUNT de orders vendidas
         activeListings={listings.filter(l => l.active).length}
       />

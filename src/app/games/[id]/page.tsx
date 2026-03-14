@@ -15,8 +15,24 @@ import { useRouter } from 'next/navigation';
 export default function GameDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const [game, setGame] = useState<any>(null);
-  const [listings, setListings] = useState<any[]>([]);
+  interface Game {
+  id: string;
+  title: string;
+  platform: string;
+  region_lock: string;
+  cover_image?: string;
+  description?: string;
+}
+interface Listing {
+  id: string;
+  price: string;
+  profiles: {
+    full_name: string;
+    reputation_score: number;
+  };
+}
+const [game, setGame] = useState<Game | null>(null);
+const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,8 +64,9 @@ export default function GameDetailPage({ params }: { params: Promise<{ id: strin
         if (listingError) throw listingError;
         setListings(listingData || []);
 
-      } catch (error: any) {
-        toast.error('Erro ao carregar detalhes: ' + error.message);
+      } catch (error) {
+        const err = error as Error;
+        toast.error('Erro ao carregar detalhes: ' + (err.message || 'Erro desconhecido'));
       } finally {
         setLoading(false);
       }

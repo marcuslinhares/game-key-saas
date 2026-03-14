@@ -2,7 +2,6 @@
 
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
 import { CreditCard, QrCode, Globe } from 'lucide-react';
 
 interface PaymentSelectorProps {

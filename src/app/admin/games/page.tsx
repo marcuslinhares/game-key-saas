@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,24 +8,36 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+interface Game {
+  id: string;
+  title: string;
+  platform: string;
+  region_lock: string;
+  created_at: string;
+}
+
 export default function AdminGamesPage() {
-  const [games, setGames] = useState<any[]>([]);
+const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     const { data, error } = await supabase
       .from('games')
       .select('*')
       .order('created_at', { ascending: false });
     
     if (error) toast.error(error.message);
-    else setGames(data || []);
+    else setGames((data as Game[]) || []);
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
-    fetchGames();
-  }, []);
+    const init = async () => {
+      await fetchGames();
+    };
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Dependência vazia para rodar apenas no mount
 
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este jogo?')) return;
