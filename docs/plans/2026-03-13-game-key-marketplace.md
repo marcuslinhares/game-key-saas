@@ -10,94 +10,88 @@
 
 ---
 
-## Chunk 1: Base Infrastructure & Auth
+## Chunk 1: Base Infrastructure & Auth (COMPLETED)
 
 **Goal:** Initialize the project, setup Supabase, and implement authentication.
 
-### Task 1: Project Initialization
+### Task 1: Project Initialization (COMPLETED)
+### Task 2: Supabase & Database Schema (COMPLETED)
+### Task 3: Authentication Flow (COMPLETED)
+
+---
+
+## Chunk 2: Product Catalog (COMPLETED)
+
+**Goal:** Create the admin interface to manage the game catalog and listings.
+
+### Task 4: Admin CRUD for Games (COMPLETED)
+### Task 5: Marketplace Listings (COMPLETED)
+
+---
+
+## Chunk 3: Buyer Flow (COMPLETED)
+
+**Goal:** Implement the public-facing pages for searching and viewing products.
+
+### Task 6: Home Page & Search (COMPLETED)
+### Task 7: Product Detail Page (COMPLETED)
+
+---
+
+## Chunk 4: Payments (COMPLETED)
+
+**Goal:** Integrate Mercado Pago (Pix) and Stripe for checkout.
+
+### Task 8: Checkout Page (COMPLETED)
+### Task 9: Payment Integrations (Simulated/API) (COMPLETED)
+
+---
+
+## Chunk 5: Key Delivery & Security (COMPLETED)
+
+**Goal:** Implement the secure delivery of keys and audit logging.
+
+### Task 10: Key Reveal Component (COMPLETED)
+### Task 11: Security & Audit Logging (COMPLETED)
+
+---
+
+## Chunk 6: Seller Dashboard
+
+**Goal:** Provide sellers with tools to manage their inventory and earnings.
+
+### Task 12: Seller Overview
 
 **Files:**
-- Create: `package.json`
-- Create: `tsconfig.json`
-- Create: `next.config.ts`
+- Create: `src/app/dashboard/seller/page.tsx`
+- Create: `src/components/seller/stats-cards.tsx`
 
-- [ ] **Step 1: Initialize Next.js project**
-Run: `npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --use-npm`
+- [ ] **Step 1: Create Seller Stats Cards**
+Display balance (pending/available) and total sales count.
 
-- [ ] **Step 2: Install core dependencies**
-Run: `npm install @supabase/supabase-js @supabase/auth-helpers-nextjs lucide-react clsx tailwind-merge`
-
-- [ ] **Step 3: Setup shadcn/ui**
-Run: `npx shadcn-ui@latest init` (Select Slate, New York, and CSS variables)
-
-- [ ] **Step 4: Commit**
-```bash
-git add .
-git commit -m "chore: initial next.js project setup"
-```
-
-### Task 2: Supabase & Database Schema
-
-**Files:**
-- Create: `supabase/migrations/20260313000000_initial_schema.sql`
-
-- [ ] **Step 1: Write initial schema migration**
-```sql
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Users Table (Profiles)
-CREATE TABLE profiles (
-  id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-  full_name TEXT,
-  avatar_url TEXT,
-  is_seller BOOLEAN DEFAULT FALSE,
-  reputation_score DECIMAL DEFAULT 5.0,
-  balance_available DECIMAL DEFAULT 0,
-  balance_pending DECIMAL DEFAULT 0,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Games Table
-CREATE TABLE games (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  title TEXT NOT NULL,
-  description TEXT,
-  cover_image TEXT,
-  platform TEXT NOT NULL,
-  region_lock TEXT DEFAULT 'Global',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- RLS Policies
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public profiles are viewable by everyone." ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile." ON profiles FOR UPDATE USING (auth.uid() = id);
-
-ALTER TABLE games ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Games are viewable by everyone." ON games FOR SELECT USING (true);
-```
-
-- [ ] **Step 2: Commit**
-```bash
-git add supabase/
-git commit -m "feat: initial database schema and RLS"
-```
-
-### Task 3: Authentication Flow
-
-**Files:**
-- Create: `src/components/auth/auth-form.tsx`
-- Create: `src/app/login/page.tsx`
-
-- [ ] **Step 1: Create login page and auth component**
-(Implementation using Supabase Auth UI or custom components)
-
-- [ ] **Step 2: Verify auth flow**
-Expected: User can sign up/login and a profile record is created via trigger.
+- [ ] **Step 2: Create Seller Inventory List**
+Table of user's listings with Edit/Pause and "Add Keys" actions.
 
 - [ ] **Step 3: Commit**
 ```bash
 git add src/
-git commit -m "feat: implement authentication flow"
+git commit -m "feat: seller dashboard overview and inventory"
+```
+
+### Task 13: Final Polish & Landing
+
+**Files:**
+- Modify: `src/app/page.tsx`
+- Modify: `src/app/globals.css`
+
+- [ ] **Step 1: Add "Become a Seller" CTA to Home**
+Add a section explaining how to start selling on the marketplace.
+
+- [ ] **Step 2: Final UI/UX Polish**
+Check responsive layouts and dark mode contrast.
+
+- [ ] **Step 3: Commit**
+```bash
+git add .
+git commit -m "feat: landing page polish and final touch"
 ```
