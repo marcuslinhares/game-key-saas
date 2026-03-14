@@ -9,8 +9,7 @@ from pathlib import Path
 
 def main():
     project_path = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
-    print(f"
-[MOBILE AUDIT] Scanning {project_path}")
+    print(f"\\n[MOBILE AUDIT] Scanning {project_path}")
     
     issues = []
     
