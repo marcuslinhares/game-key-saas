@@ -1,0 +1,42 @@
+<h2>Caminhos de Implementação</h2>
+<p class="subtitle">Como vamos tirar o seu projeto do papel?</p>
+
+<div class="cards">
+  <div class="card" data-choice="approach-mvp" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>🚀 1. MVP Ágil (Recomendado)</h3>
+      <p><b>Foco:</b> Lançamento rápido e baixo custo.</p>
+      <p><b>Stack:</b> Next.js + Supabase (Auth/DB/Storage) + Stripe (Cartão/Crypto) + Pix (Mercado Pago/Asaas).</p>
+      <p><b>Vantagem:</b> Infraestrutura "serverless", você só paga se tiver tráfego. Ideal para testar a tração.</p>
+    </div>
+  </div>
+  
+  <div class="card" data-choice="approach-secure" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>🛡️ 2. Foco em Segurança & Escala</h3>
+      <p><b>Foco:</b> Redução total de fraudes e suporte a milhares de vendas/dia.</p>
+      <p><b>Stack:</b> Next.js + Node.js (Express) + PostgreSQL + Redis (para filas de entrega de chaves e locks).</p>
+      <p><b>Vantagem:</b> Controle total sobre o fluxo de pagamentos e prevenção de "double-sell" de chaves.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="approach-api" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>🔌 3. Ecossistema Aberto</h3>
+      <p><b>Foco:</b> Marketplace com suporte a API para grandes vendedores.</p>
+      <p><b>Stack:</b> Igual ao anterior, mas com sistema de API Keys e Webhooks robusto.</p>
+      <p><b>Vantagem:</b> Atrai vendedores profissionais que usam bots para atualizar preços e chaves em massa.</p>
+    </div>
+  </div>
+</div>
+
+<div class="pros-cons">
+  <div class="pros">
+    <h4>Minha Recomendação</h4>
+    <ul>
+      <li>Começar com o <b>MVP Ágil</b> para validar o mercado.</li>
+      <li>Usar o <b>Supabase</b> para economizar tempo no backend (Auth e Banco já prontos).</li>
+      <li>Integrar com gateways que já lidam com o "split" de pagamento (parte vai para o vendedor, parte para você).</li>
+    </ul>
+  </div>
+</div>
