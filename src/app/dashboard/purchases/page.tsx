@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { KeyReveal } from '@/components/purchases/key-reveal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';

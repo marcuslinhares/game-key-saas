@@ -62,7 +62,7 @@ export function ListingForm() {
         <Label>Selecionar Jogo</Label>
         <Select 
           value={formData.game_id} 
-          onValueChange={(v) => setFormData({ ...formData, game_id: v })}
+          onValueChange={(v) => setFormData({ ...formData, game_id: v || '' })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Escolha um jogo do catálogo" />
