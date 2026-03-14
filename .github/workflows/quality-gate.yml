@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: game-key-saas/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,11 +29,25 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: |
-          npm install
-        working-directory: game-key-saas
+        run: npm install
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-key
+
+      - name: Start Dev Server
+        run: npm run dev -- -p 3000 &
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-key
+
+      - name: Wait for Server
+        run: npx wait-on http://localhost:3000 --timeout 60000
 
       - name: Run Full Verification Suite
-        run: |
-          python3 .agent/scripts/verify_all.py . --no-e2e
-        working-directory: game-key-saas
+        run: python3 .agent/scripts/verify_all.py . --url http://localhost:3000
