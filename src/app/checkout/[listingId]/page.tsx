@@ -16,7 +16,20 @@ import { useRouter } from 'next/navigation';
 export default function CheckoutPage({ params }: { params: Promise<{ listingId: string }> }) {
   const { listingId } = use(params);
   const router = useRouter();
-  const [listing, setListing] = useState<any>(null);
+  interface Listing {
+    id: string;
+    price: number;
+    games: {
+      title: string;
+      cover_image: string;
+      platform: string;
+    };
+    profiles: {
+      full_name: string;
+    };
+    game_id: string;
+  }
+  const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('pix');
@@ -42,8 +55,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ listingId: 
 
         if (error) throw error;
         setListing(data);
-      } catch (error: any) {
-        toast.error('Erro ao carregar detalhes do pedido: ' + error.message);
+      } catch (error) {
+        const err = error as Error;
+        toast.error('Erro ao carregar detalhes do pedido: ' + (err.message || 'Erro desconhecido'));
       } finally {
         setLoading(false);
       }
@@ -80,8 +94,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ listingId: 
       
       // Para o MVP, vamos simular o sucesso e ir direto para o dashboard
       router.push('/dashboard/purchases');
-    } catch (error: any) {
-      toast.error('Erro ao processar checkout: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error('Erro ao processar checkout: ' + message);
     } finally {
       setProcessing(false);
     }
@@ -185,7 +200,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ listingId: 
                 )}
               </Button>
               <p className="text-[10px] text-center text-muted-foreground">
-                Ao clicar em "Finalizar Pedido", você concorda com nossos Termos de Serviço e Política de Reembolso.
+                Ao clicar em &quot;Finalizar Pedido&quot;, você concorda com nossos Termos de Serviço e Política de Reembolso.
               </p>
             </CardFooter>
           </Card>

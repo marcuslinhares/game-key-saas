@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { KeyReveal } from '@/components/purchases/key-reveal';
@@ -12,8 +12,21 @@ import Image from 'next/image';
 import { ShoppingBag, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
+interface Order {
+  id: string;
+  created_at: string;
+  status: string;
+  listings: {
+    games: {
+      title: string;
+      cover_image: string;
+      platform: string;
+    };
+  };
+}
+
 export default function PurchasesPage() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,9 +51,10 @@ export default function PurchasesPage() {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setOrders(data || []);
-      } catch (error: any) {
-        toast.error('Erro ao carregar pedidos: ' + error.message);
+        setOrders((data as Order[]) || []);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Erro desconhecido';
+        toast.error('Erro ao carregar pedidos: ' + message);
       } finally {
         setLoading(false);
       }
@@ -125,7 +139,7 @@ export default function PurchasesPage() {
                       {order.status === 'paid' ? (
                         <div className="space-y-2">
                           <p className="text-sm font-semibold mb-2">Sua Chave:</p>
-                          <KeyReveal orderId={order.id} gameTitle={order.listings.games.title} />
+                          <KeyReveal orderId={order.id} />
                         </div>
                       ) : (
                         <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg text-center">
