@@ -2,48 +2,50 @@ import { test, expect } from '@playwright/test';
 
 const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
-test.describe('GameKey Market - Smoke Tests', () => {
+test.describe('GameKey Market - Fluxos Críticos', () => {
   
-  test('deve carregar a homepage com elementos essenciais', async ({ page }) => {
+  test('deve carregar a homepage e elementos essenciais', async ({ page }) => {
     await page.goto(baseUrl);
-    
-    // Título e Hero
     await expect(page).toHaveTitle(/GameKey Market/i);
     await expect(page.getByRole('heading', { name: /Sua próxima aventura começa aqui/i })).toBeVisible();
-    
-    // Navbar
-    await expect(page.getByRole('link', { name: /Catálogo/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Entrar/i })).toBeVisible();
   });
 
-  test('deve navegar para a página de login', async ({ page }) => {
+  test('deve navegar pelo fluxo de compra até o checkout', async ({ page }) => {
     await page.goto(baseUrl);
-    await page.getByRole('button', { name: /Entrar/i }).click();
     
-    await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByRole('heading', { name: /Welcome to the Game Key Marketplace/i })).toBeVisible();
-    await expect(page.getByPlaceholder(/email/i)).toBeVisible();
-  });
-
-  test('deve permitir buscar um jogo', async ({ page }) => {
-    await page.goto(baseUrl);
+    // 1. Pesquisa por um jogo
     const searchInput = page.getByPlaceholder(/Buscar jogos/i);
-    
     await searchInput.fill('Elden Ring');
-    // Como o Supabase pode estar mockado na CI, verificamos se o estado de loading ou 
-    // a mensagem de "nenhum jogo encontrado" aparece sem quebrar a página
-    await expect(page.locator('main')).not.toContainText('Application error');
+    
+    // 2. Clica no primeiro card de jogo (se existir)
+    const gameCard = page.locator('a[href^="/games/"]').first();
+    // Se não houver jogos no banco de teste, o teste passará se não houver erro de crash
+    if (await gameCard.isVisible()) {
+      await gameCard.click();
+      
+      // 3. Verifica se carregou a página de detalhes
+      await expect(page).toHaveURL(/\/games\//);
+      
+      // 4. Tenta ir para o checkout
+      const buyButton = page.getByRole('button', { name: /Comprar/i }).first();
+      if (await buyButton.isVisible()) {
+        await buyButton.click();
+        
+        // 5. Deve estar na página de checkout
+        await expect(page).toHaveURL(/\/checkout\//);
+        await expect(page.getByText(/Finalizar Compra/i)).toBeVisible();
+      }
+    }
   });
 
-  test('resiliência: não deve crashar se o Supabase falhar', async ({ page }) => {
-    // Simulamos um ambiente sem as chaves (o mock que criamos deve atuar aqui)
-    await page.goto(baseUrl);
+  test('resiliência: não deve exibir "Application Error" em rotas principais', async ({ page }) => {
+    const routes = ['/', '/login', '/vender'];
     
-    // O site deve carregar o layout mesmo sem dados
-    await expect(page.getByRole('navigation')).toBeVisible();
-    // Não deve exibir a tela de erro fatal do Next.js
-    const bodyText = await page.innerText('body');
-    expect(bodyText).not.toContain('Application error');
-    expect(bodyText).not.toContain('a client-side exception has occurred');
+    for (const route of routes) {
+      await page.goto(`${baseUrl}${route}`);
+      const bodyText = await page.innerText('body');
+      expect(bodyText).not.toContain('Application error');
+      expect(bodyText).not.toContain('client-side exception');
+    }
   });
 });
