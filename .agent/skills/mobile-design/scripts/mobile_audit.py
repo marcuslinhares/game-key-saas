@@ -21,18 +21,18 @@ def main():
         try:
             content = f.read_text(encoding='utf-8', errors='ignore')
             # Verifica a presença da meta tag viewport na metadata do Next.js
-            if 'viewport' in content and 'width=device-width' in content:
+            # Aceita tanto o formato antigo (no metadata) quanto o novo (export const viewport)
+            if ('viewport' in content and 'width=device-width' in content) or \
+               ('export const viewport' in content and 'device-width' in content):
                 has_viewport = True
                 break
         except Exception:
             pass
             
     if not has_viewport:
-        issues.append("Missing 'viewport' meta tag with 'width=device-width' in main layout file (src/app/layout.tsx).")
+        issues.append("Missing 'viewport' configuration in main layout file (src/app/layout.tsx).")
         
     # Check 2: CSS Media Queries (Aviso para Tailwind/CSS-in-JS)
-    # Em projetos Next.js com Tailwind, as media queries são geralmente integradas
-    # via classes ou CSS-in-JS. Apenas avisamos se não houver NENHUMA.
     css_files = list(project_path.glob("**/*.css"))
     has_media_queries = False
     for f in css_files:

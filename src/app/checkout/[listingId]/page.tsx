@@ -134,7 +134,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ listingId: 
               <CardTitle>Método de Pagamento</CardTitle>
             </CardHeader>
             <CardContent>
-              <PaymentSelector selected={paymentMethod} onSelect={setPaymentMethod} />
+              <PaymentSelector value={paymentMethod} onValueChange={setPaymentMethod} />
             </CardContent>
           </Card>
 

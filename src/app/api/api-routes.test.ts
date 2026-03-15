@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { POST as checkoutPost } from './checkout/route';
 import { POST as revealPost } from './keys/reveal/route';

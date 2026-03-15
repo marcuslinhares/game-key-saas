@@ -12,12 +12,12 @@ const isInvalidUrl = !supabaseUrl || !supabaseUrl.startsWith('http');
  * retornando a si mesmo para permitir encadeamento, exceto quando
  * é tratado como uma Promise (ex: await).
  */
-const createRecursiveMock = (defaultResponse: any = { data: null, error: null }) => {
-  const proxyHandler: ProxyHandler<any> = {
+const createRecursiveMock = (defaultResponse: unknown = { data: null, error: null }) => {
+  const proxyHandler: ProxyHandler<() => void> = {
     get(target, prop) {
       // Se for .then, estamos sendo 'awaited'
       if (prop === 'then') {
-        return (resolve: any) => resolve(defaultResponse);
+        return (resolve: (val: unknown) => void) => resolve(defaultResponse);
       }
       
       // Métodos específicos que precisam retornar algo diferente de si mesmo
@@ -30,10 +30,10 @@ const createRecursiveMock = (defaultResponse: any = { data: null, error: null })
       }
 
       // Por padrão, retorna uma função que retorna o próprio proxy (encadeamento)
-      return (...args: any[]) => new Proxy(() => {}, proxyHandler);
+      return () => new Proxy(() => {}, proxyHandler);
     },
     // Se for chamado como função diretamente
-    apply(target, thisArg, args) {
+    apply() {
       return new Proxy(() => {}, proxyHandler);
     }
   };

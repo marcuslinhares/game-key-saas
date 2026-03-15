@@ -43,7 +43,14 @@ export default function Home() {
 
       if (error) throw error;
 
-      const gamesWithPrice = (data || []).map((item: any) => {
+      const gamesWithPrice = (data || []).map((item: { 
+        id: string; 
+        title: string; 
+        platform: string; 
+        region_lock: string; 
+        cover_image: string; 
+        listings?: Listing[] 
+      }) => {
         return {
           id: item.id,
           title: item.title,

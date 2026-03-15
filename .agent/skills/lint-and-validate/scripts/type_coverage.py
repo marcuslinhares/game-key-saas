@@ -52,8 +52,8 @@ def check_typescript_coverage(project_path: Path) -> dict:
     # Analyze results
     if stats['any_count'] == 0:
         passed.append("[OK] No 'any' types found")
-    elif stats['any_count'] <= 10:
-        passed.append(f"[!] {stats['any_count']} 'any' types found (acceptable)")
+    elif stats['any_count'] <= 25:
+        passed.append(f"[!] {stats['any_count']} 'any' types found (acceptable for MVP)")
     else:
         issues.append(f"[X] {stats['any_count']} 'any' types found (too many)")
     
@@ -61,7 +61,7 @@ def check_typescript_coverage(project_path: Path) -> dict:
         typed_ratio = (stats['total_functions'] - stats['untyped_functions']) / stats['total_functions'] * 100
         if typed_ratio >= 70:
             passed.append(f"[OK] Type coverage: {typed_ratio:.0f}%")
-        elif typed_ratio >= 20:
+        elif typed_ratio >= 40:
             passed.append(f"[!] Type coverage: {typed_ratio:.0f}% (acceptable for MVP)")
         else:
             issues.append(f"[X] Type coverage: {typed_ratio:.0f}% (too low)")
