@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { calculateStartingPrice, type Listing } from '@/lib/prices';
 import { GameCard } from '@/components/games/game-card';
 import { SearchBar } from '@/components/games/search-bar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,12 +10,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Store, ShieldCheck, Zap, Globe } from 'lucide-react';
 import Link from 'next/link';
-
-interface Listing {
-  price: number;
-  active: boolean;
-  stock_count: number;
-}
 
 interface Game {
   id: string;
@@ -48,27 +43,14 @@ export default function Home() {
 
       if (error) throw error;
 
-      const gamesWithPrice = (data || []).map((item: unknown) => {
-        const game = item as { 
-          id: string; 
-          title: string; 
-          platform: string; 
-          region_lock: string; 
-          cover_image: string; 
-          listings?: Listing[] 
-        };
-        const activeListings = game.listings?.filter((l) => l.active && l.stock_count > 0) || [];
-        const minPrice = activeListings.length > 0 
-          ? Math.min(...activeListings.map((l) => l.price)) 
-          : undefined;
-        
+      const gamesWithPrice = (data || []).map((item: any) => {
         return {
-          id: game.id,
-          title: game.title,
-          platform: game.platform,
-          region_lock: game.region_lock,
-          cover_image: game.cover_image,
-          starting_price: minPrice
+          id: item.id,
+          title: item.title,
+          platform: item.platform,
+          region_lock: item.region_lock,
+          cover_image: item.cover_image,
+          starting_price: calculateStartingPrice(item.listings)
         } as Game;
       });
 
