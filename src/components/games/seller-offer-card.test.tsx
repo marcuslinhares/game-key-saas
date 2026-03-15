@@ -19,4 +19,10 @@ describe('SellerOfferCard', () => {
     fireEvent.click(buyButton);
     expect(mockOffer.onBuy).toHaveBeenCalledWith('listing-123');
   });
+
+  it('deve mostrar nome padrão se o vendedor não tiver nome', () => {
+    const anonymousOffer = { ...mockOffer, seller: { full_name: '', reputation_score: 0 } };
+    render(<SellerOfferCard {...anonymousOffer} />);
+    expect(screen.getByText(/Vendedor/i)).toBeInTheDocument();
+  });
 });

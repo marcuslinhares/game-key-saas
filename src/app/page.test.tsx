@@ -55,4 +55,31 @@ describe('Home Page', () => {
       expect(screen.getByText(/Nenhum jogo encontrado/i)).toBeInTheDocument();
     });
   });
+
+  it('TRATAMENTO DE ERRO: deve mostrar mensagem de erro quando a busca falha', async () => {
+    const fromSpy = vi.spyOn(supabase, 'from');
+    fromSpy.mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      ilike: vi.fn().mockReturnThis(),
+      then: (cb: any) => cb({ data: null, error: { message: 'Erro de Conexão' } })
+    } as any);
+
+    render(<Home />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Nenhum jogo encontrado/i)).toBeInTheDocument();
+    });
+  });
+
+  it('ESTADO: deve renderizar Skeletons durante o carregamento', () => {
+    vi.spyOn(supabase, 'from').mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      ilike: vi.fn().mockReturnThis(),
+      then: () => {} // Nunca resolve para simular loading
+    } as any);
+
+    const { container } = render(<Home />);
+    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons.length).toBeGreaterThan(0);
+  });
 });

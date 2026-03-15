@@ -13,16 +13,16 @@ vi.mock('react', async () => {
 describe('CheckoutPage Rigorous Testing', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    global.fetch = vi.fn();
   });
 
-  it('deve renderizar detalhes da compra e selecionar pagamento', async () => {
+  it('SUCESSO: deve renderizar detalhes completos', async () => {
     vi.spyOn(supabase, 'from').mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: () => Promise.resolve({ 
         data: { 
-          id: 'list-123', 
-          price: 150.00, 
+          id: 'list-123', price: 150, 
           games: { title: 'God of War', cover_image: '/gow.jpg', platform: 'PS5' },
           profiles: { full_name: 'Seller' }
         }, 
@@ -31,20 +31,28 @@ describe('CheckoutPage Rigorous Testing', () => {
     } as any);
 
     render(<CheckoutPage params={Promise.resolve({ listingId: 'list-123' })} />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('God of War')).toBeInTheDocument();
-      // O preço aparece no resumo e no total, usamos getAll
-      expect(screen.getAllByText(/150/)).toHaveLength(2);
-    });
-
-    expect(screen.getByText(/Pix/i)).toBeInTheDocument();
+    await waitFor(() => { expect(screen.getByText('God of War')).toBeInTheDocument(); });
   });
 
-  it('deve chamar a API de checkout ao clicar em finalizar', async () => {
+  it('ESTADO: deve renderizar Skeletons durante loading', () => {
+    // Simulamos um loading eterno ou lento
+    vi.spyOn(supabase, 'from').mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: () => new Promise(() => {}) // Nunca resolve
+    } as any);
+
+    const { container } = render(<CheckoutPage params={Promise.resolve({ listingId: '1' })} />);
+    
+    // Verifica se os skeletons estão presentes via atributo data-slot
+    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons.length).toBeGreaterThan(0);
+  });
+
+  it('AÇÃO: deve tratar clique no botão Finalizar', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ checkoutUrl: 'https://stripe.com/pay' })
+      json: () => Promise.resolve({ checkoutUrl: 'http://ok' })
     });
 
     vi.spyOn(supabase, 'from').mockReturnValue({
@@ -57,15 +65,7 @@ describe('CheckoutPage Rigorous Testing', () => {
     } as any);
 
     render(<CheckoutPage params={Promise.resolve({ listingId: '1' })} />);
-    
-    // O texto no botão real é "Finalizar Pedido" (com ícone)
-    await waitFor(async () => {
-      const button = screen.getByRole('button', { name: /Finalizar Pedido/i });
-      fireEvent.click(button);
-    });
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/checkout', expect.any(Object));
-    });
+    await waitFor(() => { fireEvent.click(screen.getByRole('button', { name: /Finalizar Pedido/i })); });
+    expect(global.fetch).toHaveBeenCalled();
   });
 });

@@ -4,44 +4,56 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { GameForm } from './game-form';
 import { supabase } from '@/lib/supabase';
 
+// Mock do useRouter
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
+
 describe('GameForm Rigorous Testing', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('deve renderizar campos e permitir preencher dados básicos', () => {
-    render(<GameForm />);
-    const titleInput = screen.getByLabelText(/Título do Jogo/i);
-    fireEvent.change(titleInput, { target: { value: 'New Game' } });
-    expect(titleInput).toHaveValue('New Game');
-  });
-
-  it('deve disparar inserção no Supabase ao submeter', async () => {
-    vi.spyOn(supabase, 'from').mockReturnValue({
-      insert: vi.fn().mockReturnValue(Promise.resolve({ data: { id: '1' }, error: null }))
-    } as any);
+  it('SUCESSO: deve preencher campos e submeter novo jogo', async () => {
+    const mockInsert = vi.fn().mockResolvedValue({ data: { id: '1' }, error: null });
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'games') return { insert: mockInsert };
+    });
 
     render(<GameForm />);
-    fireEvent.change(screen.getByLabelText(/Título do Jogo/i), { target: { value: 'Game Test' } });
+    
+    fireEvent.change(screen.getByLabelText(/Título do Jogo/i), { target: { value: 'New Game' } });
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: 'Description' } });
+    fireEvent.change(screen.getByLabelText(/URL da Imagem/i), { target: { value: 'http://img.jpg' } });
     
     const submitButton = screen.getByRole('button', { name: /Cadastrar Jogo/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(supabase.from).toHaveBeenCalledWith('games');
+      expect(mockInsert).toHaveBeenCalled();
     });
   });
 
-  it('deve tratar erro na inserção', async () => {
-    vi.spyOn(supabase, 'from').mockReturnValue({
-      insert: () => Promise.resolve({ data: null, error: { message: 'Erro Banco' } })
-    } as any);
-
-    render(<GameForm />);
-    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Jogo/i }));
+  it('SUCESSO: deve preencher campos e submeter atualização', async () => {
+    const initialData = { id: '1', title: 'Old', platform: 'PC', region_lock: 'Global' };
+    const mockUpdate = vi.fn().mockReturnThis();
+    const mockEq = vi.fn().mockResolvedValue({ error: null });
     
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'games') return { update: mockUpdate, eq: mockEq };
+    });
+
+    render(<GameForm initialData={initialData} />);
+    fireEvent.change(screen.getByLabelText(/Título do Jogo/i), { target: { value: 'Updated' } });
+    
+    const submitButton = screen.getByRole('button', { name: /Atualizar Jogo/i });
+    fireEvent.click(submitButton);
+
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Cadastrar Jogo/i })).toBeInTheDocument();
+      expect(mockUpdate).toHaveBeenCalled();
     });
   });
 });

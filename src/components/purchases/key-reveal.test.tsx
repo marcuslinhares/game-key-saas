@@ -42,4 +42,29 @@ describe('KeyReveal Rigorous Testing', () => {
       expect(screen.getByRole('button', { name: /Revelar Chave/i })).toBeInTheDocument();
     });
   });
+
+  it('AÇÃO: deve permitir copiar a chave para o clipboard', async () => {
+    // Mock do clipboard
+    Object.assign(navigator, {
+      clipboard: { writeText: vi.fn() }
+    });
+
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ keyCode: 'KEY-123' })
+    });
+
+    render(<KeyReveal {...props} />);
+    fireEvent.click(screen.getByRole('button', { name: /Revelar Chave/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('KEY-123')).toBeInTheDocument();
+    });
+
+    // Clica no botão de cópia (que agora tem o ícone de cópia)
+    const buttons = screen.getAllByRole('button');
+    fireEvent.click(buttons[0]); // O botão de cópia é o primeiro/único após a revelação
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('KEY-123');
+  });
 });

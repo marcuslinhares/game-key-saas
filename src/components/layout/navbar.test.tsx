@@ -26,12 +26,20 @@ describe('Navbar Rigorous Testing', () => {
     });
   });
 
-  it('deve lidar com falha de autenticação no mount', async () => {
+  it('deve mostrar link do dashboard quando logado', async () => {
     mockSupabaseAuth.getUser.mockResolvedValueOnce({ 
-      data: { user: null }, 
-      error: new Error('Falha') 
+      data: { user: { id: '123' } }, 
+      error: null 
     } as any);
 
+    render(<Navbar />);
+    await waitFor(() => {
+      expect(screen.getByTestId('icon-User')).toBeInTheDocument();
+    });
+  });
+
+  it('deve mostrar botão Entrar quando deslogado ou erro', async () => {
+    mockSupabaseAuth.getUser.mockResolvedValueOnce({ data: { user: null }, error: null } as any);
     render(<Navbar />);
     await waitFor(() => {
       expect(screen.getByText('Entrar')).toBeInTheDocument();

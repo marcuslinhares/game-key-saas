@@ -31,17 +31,31 @@ describe('AuthForm Rigorous Testing', () => {
     });
   });
 
-  it('deve mostrar erro no login', async () => {
+  it('ERRO: deve mostrar erro no cadastro', async () => {
+    vi.spyOn(supabase.auth, 'signUp').mockResolvedValueOnce({ 
+      data: { user: null }, 
+      error: { message: 'Erro Cadastro' } 
+    } as any);
+
+    render(<AuthForm />);
+    fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));
+    
+    await waitFor(() => {
+      expect(screen.getByText('Erro Cadastro')).toBeInTheDocument();
+    });
+  });
+
+  it('SUCESSO: deve logar com sucesso', async () => {
     vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValueOnce({ 
-      data: {}, 
-      error: { message: 'Erro Login' } 
+      data: { user: { id: '1' } }, 
+      error: null 
     } as any);
 
     render(<AuthForm />);
     fireEvent.click(screen.getByRole('button', { name: /Sign In/i }));
     
     await waitFor(() => {
-      expect(screen.getByText('Erro Login')).toBeInTheDocument();
+      expect(screen.getByText(/Logged in successfully/i)).toBeInTheDocument();
     });
   });
 });

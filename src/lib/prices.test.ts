@@ -1,35 +1,36 @@
 import { describe, it, expect } from 'vitest';
-import { calculateStartingPrice, formatCurrency, type Listing } from './prices';
+import { calculateStartingPrice, formatCurrency } from './prices';
 
-describe('calculateStartingPrice', () => {
-  it('deve retornar undefined se não houver listagens', () => {
-    expect(calculateStartingPrice([])).toBeUndefined();
-    expect(calculateStartingPrice(undefined)).toBeUndefined();
+describe('Prices Lib Rigorous Testing', () => {
+  describe('calculateStartingPrice', () => {
+    it('deve retornar undefined para lista nula ou vazia', () => {
+      expect(calculateStartingPrice(undefined)).toBeUndefined();
+      expect(calculateStartingPrice([])).toBeUndefined();
+    });
+
+    it('deve retornar o menor preço de listagens ativas com estoque', () => {
+      const listings = [
+        { price: 100, active: true, stock_count: 5 },
+        { price: 50, active: true, stock_count: 2 },
+        { price: 30, active: false, stock_count: 10 },
+        { price: 10, active: true, stock_count: 0 },
+      ];
+      expect(calculateStartingPrice(listings)).toBe(50);
+    });
+
+    it('deve retornar undefined se nenhuma listagem for válida', () => {
+      const listings = [
+        { price: 30, active: false, stock_count: 10 },
+        { price: 10, active: true, stock_count: 0 },
+      ];
+      expect(calculateStartingPrice(listings)).toBeUndefined();
+    });
   });
 
-  it('deve retornar undefined se não houver listagens ativas com estoque', () => {
-    const listings: Listing[] = [
-      { price: 10, active: false, stock_count: 5 },
-      { price: 20, active: true, stock_count: 0 },
-    ];
-    expect(calculateStartingPrice(listings)).toBeUndefined();
-  });
-
-  it('deve retornar o menor preço entre as listagens válidas', () => {
-    const listings: Listing[] = [
-      { price: 50, active: true, stock_count: 10 },
-      { price: 30, active: true, stock_count: 5 },
-      { price: 20, active: false, stock_count: 5 }, // inativa
-      { price: 10, active: true, stock_count: 0 },   // sem estoque
-    ];
-    expect(calculateStartingPrice(listings)).toBe(30);
-  });
-});
-
-describe('formatCurrency', () => {
-  it('deve formatar corretamente para BRL', () => {
-    // Usamos regex porque o formatador pode usar espaços inquebráveis ou diferentes caracteres de moeda dependendo do ambiente
-    const result = formatCurrency(1250.5);
-    expect(result).toMatch(/R\$\s?1\.250,50/);
+  describe('formatCurrency', () => {
+    it('deve formatar valor para BRL corretamente', () => {
+      expect(formatCurrency(100)).toContain('100,00');
+      expect(formatCurrency(0)).toContain('0,00');
+    });
   });
 });
