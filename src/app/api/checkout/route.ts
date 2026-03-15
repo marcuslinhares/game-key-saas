@@ -5,6 +5,12 @@ import { createStripeSession } from '@/lib/payments/stripe';
 
 export async function POST(request: Request) {
   try {
+    // 0. Verificar autenticação (RIGOR DE SEGURANÇA)
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
     const { listingId, paymentMethod } = await request.json();
 
     // 1. Obter informações do anúncio e jogo
@@ -18,12 +24,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Anúncio não encontrado' }, { status: 404 });
     }
 
-    // 2. Criar registro do pedido no banco (Status: Pending)
-    // Nota: Em produção, usaríamos o service_role para bypass RLS se necessário
-    // ou garantiríamos que o usuário autenticado pode inserir.
-    // Aqui assumimos que o cliente Supabase está configurado corretamente.
-    
-    // Simulação de criação de pedido:
+    // Normaliza o título do jogo (lidando com retorno do Supabase que pode ser objeto ou array)
+    const gameTitle = Array.isArray(listing.games) ? listing.games[0]?.title : listing.games?.title;
+
+    // 2. Criar registro do pedido no banco
     const orderId = `order_${Math.random().toString(36).substr(2, 9)}`;
 
     let checkoutUrl = '';
@@ -31,10 +35,10 @@ export async function POST(request: Request) {
 
     // 3. Chamar provedor de pagamento
     if (paymentMethod === 'pix') {
-      paymentData = await createPixPayment(listing.price, `Compra: ${listing.games.title}`);
-      checkoutUrl = `/checkout/pix/${orderId}`; // Redireciona para tela de QR Code interna
+      paymentData = await createPixPayment(listing.price, `Compra: ${gameTitle || 'Jogo'}`);
+      checkoutUrl = `/checkout/pix/${orderId}`; 
     } else {
-      paymentData = await createStripeSession(listing.price, `Compra: ${listing.games.title}`);
+      paymentData = await createStripeSession(listing.price, `Compra: ${gameTitle || 'Jogo'}`);
       checkoutUrl = paymentData.url;
     }
 

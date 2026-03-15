@@ -116,6 +116,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ listingId: 
 
   if (!listing) return null;
 
+  const gameData = Array.isArray(listing.games) ? listing.games[0] : listing.games;
+  const sellerData = Array.isArray(listing.profiles) ? listing.profiles[0] : listing.profiles;
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       <Link href={`/games/${listing.game_id}`} className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8">
@@ -131,7 +134,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ listingId: 
               <CardTitle>Método de Pagamento</CardTitle>
             </CardHeader>
             <CardContent>
-              <PaymentSelector value={paymentMethod} onValueChange={setPaymentMethod} />
+              <PaymentSelector selected={paymentMethod} onSelect={setPaymentMethod} />
             </CardContent>
           </Card>
 
@@ -154,14 +157,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ listingId: 
             <CardContent className="space-y-4">
               <div className="flex gap-4">
                 <div className="h-20 w-16 relative rounded-md overflow-hidden bg-gray-100 shrink-0">
-                  {listing.games.cover_image && (
-                    <Image src={listing.games.cover_image} alt={listing.games.title} fill className="object-cover" />
+                  {gameData?.cover_image && (
+                    <Image src={gameData.cover_image} alt={gameData.title} fill className="object-cover" />
                   )}
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm line-clamp-2">{listing.games.title}</h4>
-                  <p className="text-xs text-muted-foreground">{listing.games.platform}</p>
-                  <p className="text-xs text-muted-foreground">Vendedor: {listing.profiles.full_name}</p>
+                  <h4 className="font-semibold text-sm line-clamp-2">{gameData?.title}</h4>
+                  <p className="text-xs text-muted-foreground">{gameData?.platform}</p>
+                  <p className="text-xs text-muted-foreground">Vendedor: {sellerData?.full_name}</p>
                 </div>
               </div>
 

@@ -3,18 +3,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ListingForm } from './listing-form';
 import { supabase } from '@/lib/supabase';
 
-describe('ListingForm', () => {
+describe('ListingForm Rigorous Testing', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('deve renderizar campos de preço e estoque', async () => {
+  it('INTEGRIDADE: deve disparar a lógica de envio ao submeter', async () => {
     render(<ListingForm />);
-    expect(screen.getByLabelText(/Preço \(R\$\)/i)).toBeInTheDocument();
-  });
-
-  it('deve buscar dados iniciais e permitir clicar em submeter', async () => {
-    render(<ListingForm />);
+    fireEvent.change(screen.getByLabelText(/Preço \(R\$\)/i), { target: { value: '199.99' } });
+    fireEvent.change(screen.getByLabelText(/Estoque Inicial/i), { target: { value: '5' } });
     const submitButton = screen.getByRole('button', { name: /Publicar Anúncio/i });
     fireEvent.click(submitButton);
     await waitFor(() => {
@@ -22,10 +19,19 @@ describe('ListingForm', () => {
     });
   });
 
-  it('deve mostrar estado de carregamento inicial', () => {
-    // Forçamos o mock a não resolver imediatamente se necessário, 
-    // mas a renderização inicial já cobre algumas linhas de setup
+  it('TRATAMENTO DE ERRO: deve lidar com erro ao buscar jogos no mount', async () => {
+    vi.spyOn(supabase, 'from').mockImplementation((table: string) => {
+      if (table === 'games') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          then: (cb: any) => cb({ data: null, error: { message: 'Erro Banco' } })
+        } as any;
+      }
+      return { select: vi.fn().mockReturnThis() } as any;
+    });
+
     render(<ListingForm />);
-    expect(screen.queryByText(/Carregando/i)).not.toBeInTheDocument();
+    // Verificamos se o formulário ainda renderiza
+    expect(screen.getByText(/Publicar Anúncio/i)).toBeInTheDocument();
   });
 });
