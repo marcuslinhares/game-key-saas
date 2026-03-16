@@ -123,4 +123,7 @@ jobs:
               -p 3002:3000 \
               -e NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} \
               -e NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} \
-              ghcr.io/${{ env.IMAGE_NAME }}:latest
+              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+              --entrypoint /bin/sh \
+              ghcr.io/${{ env.IMAGE_NAME }}:latest \
+              -c "chmod +x /app/scripts/docker-entrypoint.sh && /app/scripts/docker-entrypoint.sh"
