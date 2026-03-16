@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.BASE_URL || 'http://127.0.0.1:3006',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:3005',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -19,8 +19,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'NEXT_INSTRUMENT_CODE_FOR_COVERAGE=true npm run start -- -p 3006',
-    url: 'http://127.0.0.1:3006',
-    reuseExistingServer: false,
+    command: 'npm run start -- -p 3005 -H 127.0.0.1',
+    url: 'http://127.0.0.1:3005',
+    reuseExistingServer: true,
+    timeout: 30000,
   },
 });
