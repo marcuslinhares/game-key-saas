@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:3006',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -18,10 +18,9 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run dev',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  webServer: {
+    command: 'NEXT_INSTRUMENT_CODE_FOR_COVERAGE=true npm run start -- -p 3006',
+    url: 'http://127.0.0.1:3006',
+    reuseExistingServer: false,
+  },
 });
