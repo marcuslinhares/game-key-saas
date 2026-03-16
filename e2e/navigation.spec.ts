@@ -11,9 +11,11 @@ test.describe('GameKey Market - Navegação e Rotas', () => {
     expect(bodyText).not.toContain('client-side exception');
   });
 
-  test('deve carregar a página de vender (404 esperada)', async ({ page }) => {
-    const response = await page.goto(`/vender`);
-    expect(response?.status()).toBe(404);
+  test('deve carregar a página de vender', async ({ page }) => {
+    await page.goto('/vender');
+    const bodyText = await page.innerText('body');
+    expect(bodyText).toContain('Venda suas chaves');
+    expect(bodyText).not.toContain('Application error');
   });
 
   test('deve navegar entre páginas via navbar', async ({ page }) => {
@@ -23,8 +25,9 @@ test.describe('GameKey Market - Navegação e Rotas', () => {
     await page.getByRole('link', { name: /Catálogo/i }).first().click();
     await expect(page).toHaveURL(/\/$/);
     
-    // Verifica que o link Vender Jogos existe (mesmo sem página)
-    await expect(page.getByRole('link', { name: /Vender Jogos/i })).toBeVisible();
+    // Clica em Vender Jogos
+    await page.getByRole('link', { name: /Vender Jogos/i }).click();
+    await expect(page).toHaveURL(/\/vender/);
   });
 
   test('deve navegar para login via navbar', async ({ page }) => {
