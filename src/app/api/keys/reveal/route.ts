@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { decrypt } from '@/lib/crypto';
 
 export async function POST(request: Request) {
   try {
     const { orderId } = await request.json();
+
+    if (!orderId) {
+      return NextResponse.json({ error: 'orderId é obrigatório' }, { status: 400 });
+    }
 
     // 1. Verificar autenticação
     const { data: { user } } = await supabase.auth.getUser();
@@ -14,7 +19,7 @@ export async function POST(request: Request) {
     // 2. Verificar se o pedido pertence ao usuário e está pago
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('*, keys(*)')
+      .select('*')
       .eq('id', orderId)
       .eq('buyer_id', user.id)
       .eq('status', 'paid')
@@ -35,7 +40,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Chave não encontrada' }, { status: 404 });
     }
 
-    // 4. Registrar o log de revelação (Auditoria)
+    // 4. Descriptografar a chave usando AES-256-GCM
+    let decryptedKey = key.key_code;
+    try {
+      // Se a chave estiver no formato iv:authTag:ciphertext (criptografada), descriptografa
+      if (key.key_code && key.key_code.includes(':')) {
+        decryptedKey = decrypt(key.key_code);
+      }
+      // Caso contrário, assume que é texto plano (migração) e usa direto
+    } catch {
+      // Se falhar ao descriptografar, retorna o valor armazenado
+      console.warn('Falha ao descriptografar chave, retornando valor bruto');
+    }
+
+    // 5. Registrar o log de revelação (Auditoria)
     const ip = request.headers.get('x-forwarded-for') || '0.0.0.0';
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
@@ -44,15 +62,14 @@ export async function POST(request: Request) {
         key_id: key.id,
         user_id: user.id,
         ip_address: ip,
-        user_agent: userAgent
-      }
+        user_agent: userAgent,
+      },
     ]);
 
-    // 5. Retornar a chave (Em produção, aqui descriptografaríamos com a Master Key)
+    // 6. Retornar a chave descriptografada
     return NextResponse.json({
-      keyCode: key.key_code,
+      keyCode: decryptedKey,
     });
-
   } catch (error) {
     const err = error as Error;
     console.error('Key Reveal error:', err.message);
