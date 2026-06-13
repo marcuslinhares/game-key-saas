@@ -13,7 +13,7 @@ function getStripe(): Stripe | null {
     return null;
   }
   return new Stripe(key, {
-    apiVersion: '2025-02-24.acacia',
+    apiVersion: '2026-05-27.dahlia',
   });
 }
 

@@ -40,6 +40,12 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-key
 
+      - name: Run Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-key
+
       - name: Start Dev Server
         run: npm run dev -- -p 3000 &
         env:
@@ -48,6 +54,12 @@ jobs:
 
       - name: Wait for Server
         run: npx wait-on http://localhost:3000 --timeout 60000
+
+      - name: Run Test Coverage
+        run: npm run test:coverage
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-key
 
       - name: Run Full Verification Suite
         run: python3 .agent/scripts/verify_all.py . --url http://localhost:3000
